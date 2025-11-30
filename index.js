@@ -5,7 +5,10 @@ const bs58 = require('bs58');
 const fetch = require('node-fetch');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
-const connection = new Connection(process.env.RPC_URL || 'https://rpc.ankr.com/solana', 'confirmed');
+const connection = new Connection(
+  process.env.RPC_URL || 'https://mainnet.helius-rpc.com/?api-key=33bcb681-ace2-444e-b8b8-c575b9ae0b8b',
+  'confirmed'
+);
 const wallet = Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY));
 const WALLET = wallet.publicKey.toBase58();
 
