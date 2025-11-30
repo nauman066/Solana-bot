@@ -1,6 +1,7 @@
 {
-  "name": "nauman-sniper",
+  "name": "tera-dream-sniper",
   "version": "1.0.0",
+  "description": "Complete Solana Telegram Sniper Bot with P/L Tracking",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -11,5 +12,8 @@
     "bs58": "^5.0.0",
     "node-fetch": "^2.7.0",
     "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
