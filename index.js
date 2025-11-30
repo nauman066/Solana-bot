@@ -32,13 +32,22 @@ updateSolPrice();
 // Keep alive
 setInterval(() => fetch(process.env.RENDER_URL || 'https://your-bot.onrender.com').catch(() => {}), 300000);
 
-// Jupiter swap function
+// Jupiter swap function FIXED
 async function jupiterSwap(inputAmount, outputMint, slippageBps) {
   try {
-    // Get quote
-    const quoteResponse = await fetch(
-      `https://quote-api.jup.ag/v6/quote?inputMint=So11111111111111111111111111111111111111112&outputMint=${outputMint}&amount=${inputAmount}&slippageBps=${slippageBps}`
-    );
+    // INPUT MINT FIX - SOL ka correct mint address
+    const inputMint = "So11111111111111111111111111111111111111112";
+    
+    // Get quote - PROPER URL
+    const quoteUrl = `https://quote-api.jup.ag/v6/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${inputAmount}&slippageBps=${slippageBps}`;
+    
+    console.log('Quote URL:', quoteUrl);
+    
+    const quoteResponse = await fetch(quoteUrl);
+    if (!quoteResponse.ok) {
+      throw new Error(`Quote API error: ${quoteResponse.status}`);
+    }
+    
     const quoteData = await quoteResponse.json();
     
     if (!quoteData || quoteData.error) {
@@ -58,9 +67,13 @@ async function jupiterSwap(inputAmount, outputMint, slippageBps) {
       })
     });
     
+    if (!txResponse.ok) {
+      throw new Error(`Swap API error: ${txResponse.status}`);
+    }
+    
     const swapData = await txResponse.json();
     if (!swapData.swapTransaction) {
-      throw new Error('Transaction creation failed');
+      throw new Error('Transaction creation failed: ' + (swapData.message || 'Unknown error'));
     }
 
     // Deserialize transaction
@@ -77,7 +90,7 @@ async function jupiterSwap(inputAmount, outputMint, slippageBps) {
     // Confirm transaction
     const confirmation = await connection.confirmTransaction(signature, 'confirmed');
     if (confirmation.value.err) {
-      throw new Error('Transaction failed');
+      throw new Error('Transaction failed on chain');
     }
 
     return {
@@ -85,9 +98,10 @@ async function jupiterSwap(inputAmount, outputMint, slippageBps) {
       signature,
       inputAmount: quoteData.inputAmount,
       outputAmount: quoteData.outAmount,
-      pricePerToken: (quoteData.inputAmount / quoteData.outAmount) * (10 ** quoteData.outputDecimals)
+      pricePerToken: (quoteData.inputAmount / quoteData.outAmount) * (10 ** (quoteData.outputDecimals || 6))
     };
   } catch (error) {
+    console.error('Jupiter swap error:', error);
     return { success: false, error: error.message };
   }
 }
