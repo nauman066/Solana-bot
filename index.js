@@ -19,12 +19,16 @@ setInterval(async () => {
 }, 120000);
 
 bot.command('wallet', async (ctx) => {
+  ctx.reply('Wallet check kar raha hun...');
   try {
-    const bal = await connection.getBalance(wallet.publicKey);
+    const bal = await Promise.race([
+      connection.getBalance(wallet.publicKey),
+      new Promise((_, reject) => setTimeout(() => reject('timeout'), 9000))
+    ]);
     const sol = bal / 1e9;
-    ctx.reply(`*Wallet Connected* ✅\n\nAddress: \`\( {WALLET}\`\nBalance: \){sol.toFixed(6)} SOL ≈ \[ {(sol * solPrice).toFixed(2)}`, { parse_mode: 'Markdown' });
-  } catch (e) {
-    ctx.reply('Network slow hai, 5 sec baad /wallet try kar');
+    ctx.reply(`*Wallet Connected*\n\nAddress: \`\( {WALLET}\`\nBalance: \){sol.toFixed(6)} SOL`, { parse_mode: 'Markdown' });
+  } catch {
+    ctx.reply('Solana network slow hai, 10 sec baad /wallet daal');
   }
 });
 
