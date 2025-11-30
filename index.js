@@ -5,7 +5,7 @@ const bs58 = require('bs58');
 const fetch = require('node-fetch');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
-const connection = new Connection('https://solana-api.projectserum.com', 'confirmed');
+const connection = new Connection('https://rpc.ankr.com/solana', 'confirmed');
 const wallet = Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY));
 const WALLET = wallet.publicKey.toBase58();
 
@@ -28,11 +28,18 @@ setInterval(async () => {
 
 // /wallet
 bot.command('wallet', async (ctx) => {
-  const bal = await connection.getBalance(wallet.publicKey);
-  const bal = await connection.getBalance(wallet.publicKey);
-      const sol = bal / 1e9;
-      ctx.reply(`*Wallet Connected*\n\nAddress: \`\( {WALLET}\`\nBalance: \){sol.toFixed(6)} SOL ≈ \[ {(sol*solPrice).toFixed(2)}`, { parse_mode: 'Markdown' });
-
+  bot.command('wallet', async (ctx) => {
+  try {
+    const bal = await Promise.race([
+      connection.getBalance(wallet.publicKey),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+    ]);
+    const sol = bal / 1e9;
+    ctx.reply(`*Wallet Connected* ✅\n\nAddress: \`\( {WALLET}\`\nBalance: \){sol.toFixed(6)} SOL ≈ $${(sol*solPrice).toFixed(2)}`, { parse_mode: 'Markdown' });
+  } catch (e) {
+    ctx.reply('Wallet check kar raha hun... thoda slow hai network.\n5 second baad khud /wallet daal dena.');
+  }
+});
 // /portfolio with P/L
 bot.command('portfolio', async (ctx) => {
   ctx.reply('Portfolio load kar raha hun...');
@@ -146,7 +153,10 @@ bot.command('buy', async (ctx) => {
 });
 
 bot.start((ctx) => ctx.reply(`Nauman Sniper Bot v3 LIVE hai bhai!\n\nCommands:\n/wallet → balance\n/portfolio → profit/loss\n/buy 0.005 40 token1,token2`));
-
+// Keep bot awake on Render
+setInterval(() => {
+  fetch('https://YOUR-RENDER-APP-NAME.onrender.com');
+}, 600000);
 require('http').createServer((req, res) => res.end('Bot Live')).listen(process.env.PORT || 3000);
 
 bot.launch();
