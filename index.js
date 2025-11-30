@@ -44,3 +44,11 @@ bot.command('buy', async (ctx) => {
 
 bot.launch();
 console.log('Nauman Sniper Bot is running!');
+// Render ke liye fake server – bot ko kuch nahi hoga
+const PORT = process.env.PORT || 3000;
+const http = require('http');
+http.createServer((req, res) => {
+  res.writeHead(200);
+  res.end('Nauman Sniper Bot Live Hai!');
+}).listen(PORT);
+console.log(`Fake server running on port ${PORT}`);
