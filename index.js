@@ -5,7 +5,7 @@ const bs58 = require('bs58');
 const fetch = require('node-fetch');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
-const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+const connection = new Connection('https://solana-api.projectserum.com', 'confirmed');
 const wallet = Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY));
 const WALLET = wallet.publicKey.toBase58();
 
@@ -29,9 +29,9 @@ setInterval(async () => {
 // /wallet
 bot.command('wallet', async (ctx) => {
   const bal = await connection.getBalance(wallet.publicKey);
-  const sol = bal / 1e9;
-  ctx.reply(`Wallet Connected\n\`\( {WALLET}\`\nBalance: \){sol.toFixed(6)} SOL ≈ \[ {(sol*solPrice).toFixed(2)}`, { parse_mode: 'Markdown' });
-});
+  const bal = await connection.getBalance(wallet.publicKey);
+      const sol = bal / 1e9;
+      ctx.reply(`*Wallet Connected*\n\nAddress: \`\( {WALLET}\`\nBalance: \){sol.toFixed(6)} SOL ≈ \[ {(sol*solPrice).toFixed(2)}`, { parse_mode: 'Markdown' });
 
 // /portfolio with P/L
 bot.command('portfolio', async (ctx) => {
@@ -41,7 +41,7 @@ bot.command('portfolio', async (ctx) => {
   let msg = `*Your Portfolio* (SOL ≈ \]{solPrice})\n\n`;
 
   const solBal = (await connection.getBalance(wallet.publicKey)) / 1e9;
-  msg += `SOL: ${solBal.toFixed(6)} ≈ \[ {(solBal*solPrice).toFixed(2)}\n\n`;
+  msg += `SOL: ${solBal.toFixed(6)} ≈ \[ {(solBal*solPrice).toFixed(2)}\n\n`;\n
 
   const tokens = await connection.getParsedTokenAccountsByOwner(wallet.publicKey, {
     programId: new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
